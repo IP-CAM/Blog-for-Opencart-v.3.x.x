@@ -1,0 +1,63 @@
+{{ header }}
+<style>
+    .blog-article {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    .blog-article img {
+        border-bottom: 1px solid #000;
+        width: 100%;
+    }
+    .blog-article-description {
+        display: flex;
+        flex-direction: column;
+        padding: 15px 35px;
+        color: #000;
+        background-color: #F0F7FD;
+        height: 100%;
+    }
+    .blog-article-description span {
+        font-size: 18px;
+    }
+</style>
+<div id="help-nik" class="container">
+    <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>
+    <div class="row">{{ column_left }}
+        {% if column_left and column_right %}
+            {% set class = 'col-sm-6' %}
+        {% elseif column_left or column_right %}
+            {% set class = 'col-sm-9' %}
+        {% else %}
+            {% set class = 'col-sm-12' %}
+        {% endif %}
+        <div id="content" class="{{ class }}">
+            {{ content_top }}
+
+            <h4>{{ text_related_articles }}</h4>
+            {% for article in articles %}
+                <div class="row">
+                    <div class="col-sm-3">
+                        <a href="{{ article.link }}" class="blog-article">
+                            <img src="{{ article.thumb }}" alt="{{ article.title }}">
+                            <div class="blog-article-description">
+                                <span>{{ article.title }}</span>
+                                <p>{{ article.description }}</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {{ content_bottom }}
+        </div>
+        {{ column_right }}
+    </div>
+</div>
+{{ footer }}
