@@ -40,10 +40,10 @@
         <div id="content" class="{{ class }}">
             {{ content_top }}
 
-            <h4>{{ text_related_articles }}</h4>
+            <h4>{{ text_related_articles }}{% if tags %}: {{ tags }}{% endif %}</h4>
             {% for article in articles %}
                 <div class="row">
-                    <div class="col-sm-3">
+                    <div class="col-sm-3 col-sm-push-4">
                         <a href="{{ article.link }}" class="blog-article">
                             <img src="{{ article.thumb }}" alt="{{ article.title }}">
                             <div class="blog-article-description">
@@ -54,6 +54,11 @@
                     </div>
                 </div>
             {% endfor %}
+
+            <div class="row">
+                <div class="col-sm-6 text-left">{{ pagination }}</div>
+                <div class="col-sm-6 text-right">{{ results }}</div>
+            </div>
 
             {{ content_bottom }}
         </div>

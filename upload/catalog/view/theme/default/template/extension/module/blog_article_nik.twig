@@ -42,14 +42,15 @@
 
             {{ article.description }}
 
-
-            <p>
-                <i class="fa fa-tags"></i>
-                {% for article_tag in article_tags %}
-                    <a href="{{ article_tag.link }}">{{ article_tag.text }}</a>
-                {% endfor %}
-            </p>
-            <hr>
+            {% if article_tags %}
+                <p>
+                    <i class="fa fa-tags"></i>
+                    {% for article_tag in article_tags %}
+                        <a href="{{ article_tag.link }}">{{ article_tag.text }}</a>
+                    {% endfor %}
+                </p>
+                <hr>
+            {% endif %}
 
             <h4>{{ text_related_articles }}</h4>
             <a href="{{ all_related_articles }}" style="display: block; color: black; text-decoration: underline;">{{ text_show_all }}</a>

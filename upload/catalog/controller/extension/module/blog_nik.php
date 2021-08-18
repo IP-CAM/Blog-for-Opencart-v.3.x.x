@@ -22,7 +22,7 @@ class ControllerExtensionModuleBlogNik extends Controller {
 
         $blog_settings = $this->model_extension_module_blog_nik->getBlogSettings();
 
-        if (isset($blog_settings['limit_articles'])) {
+        if (isset($blog_settings['limit_articles']) && !empty($blog_settings['limit_articles'])) {
             $limit = $blog_settings['limit_articles'];
         } else {
             $limit = 8;
@@ -182,7 +182,7 @@ class ControllerExtensionModuleBlogNik extends Controller {
                 }
 
                 if ($article['image']) {
-                    $thumb = $this->model_tool_image->resize($article_info['image'], 325, 225);
+                    $thumb = $this->model_tool_image->resize($article['image'], 325, 225);
                 } else {
                     $thumb = $this->model_tool_image->resize('no_image.png', 325, 225);
                 }
@@ -271,21 +271,26 @@ class ControllerExtensionModuleBlogNik extends Controller {
             );
         }
 
-
         $blog_settings = $this->model_extension_module_blog_nik->getBlogSettings();
+
+        if (isset($blog_settings['limit_articles']) && !empty($blog_settings['limit_articles'])) {
+            $limit = $blog_settings['limit_articles'];
+        } else {
+            $limit = 8;
+        }
 
         $data['article'] = array();
 
         $filter_data = array(
             'filter_tags'     => $tags,
             'blog_article_id' => $blog_article_id,
-            'start'           => ($page - 1) * $blog_settings['limit_related_articles'],
-            'limit'           => 20
+            'start'           => ($page - 1) * $limit,
+            'limit'           => $limit
         );
 
         $data['articles'] = array();
 
-        $article_total = $this->model_extension_module_blog_nik->getTotalBlogArticles();
+        $article_total = $this->model_extension_module_blog_nik->getTotalBlogArticles($filter_data);
 
         $articles = $this->model_extension_module_blog_nik->getBlogArticles($filter_data);
 
@@ -315,9 +320,34 @@ class ControllerExtensionModuleBlogNik extends Controller {
             );
         }
 
-//        echo "<pre>";
-//        print_r($data['articles']);
-//        echo "</pre>";
+        $pagination = new Pagination();
+        $pagination->total = $article_total;
+        $pagination->page = $page;
+        $pagination->limit = $limit;
+        $pagination->url = $this->url->link('extension/module/blog_nik/articles', '&page={page}' . '&tags=' . $tags . ((!empty($blog_article_id)) ? '&blog_article_id=' . $blog_article_id : '' ));
+
+        $data['pagination'] = $pagination->render();
+
+        $data['results'] = sprintf($this->language->get('text_pagination'), ($article_total) ? (($page - 1) * $limit) + 1 : 0, ((($page - 1) * $limit) > ($article_total - $limit)) ? $article_total : ((($page - 1) * $limit) + $limit), $article_total, ceil($article_total / $limit));
+
+        // http://googlewebmastercentral.blogspot.com/2011/09/pagination-with-relnext-and-relprev.html
+        if ($page == 1) {
+            $this->document->addLink($this->url->link('extension/module/blog_nik/articles', 'tags=' . $tags . ((!empty($blog_article_id)) ? '&blog_article_id=' . $blog_article_id : '' )), 'canonical');
+        } else {
+            $this->document->addLink($this->url->link('extension/module/blog_nik/articles', '&page='. $page . '&tags=' . $tags . ((!empty($blog_article_id)) ? '&blog_article_id=' . $blog_article_id : '' )), 'canonical');
+        }
+
+        if ($page > 1) {
+            $this->document->addLink($this->url->link('extension/module/blog_nik/articles', (($page - 2) ? '&page='. ($page - 1) : '' ) . '&tags=' . $tags . ((!empty($blog_article_id)) ? '&blog_article_id=' . $blog_article_id : '' )), 'prev');
+        }
+
+        if ($limit && ceil($article_total / $limit) > $page) {
+            $this->document->addLink($this->url->link('extension/module/blog_nik/articles', '&page='. ($page + 1) . '&tags=' . $tags . ((!empty($blog_article_id)) ? '&blog_article_id=' . $blog_article_id : '' )), 'next');
+        }
+
+        $data['limit'] = $limit;
+        $data['page'] = $page;
+        $data['tags'] = $tags;
 
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['column_right'] = $this->load->controller('common/column_right');

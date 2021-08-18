@@ -6,8 +6,32 @@ class ModelExtensionModuleBlogNik extends Model {
         return $query->row;
     }
 
-    public function getTotalBlogArticles() {
-        $query = $this->db->query("SELECT COUNT(*) as total FROM " . DB_PREFIX . "blog_article ba LEFT JOIN " . DB_PREFIX . "blog_article_description bad ON (ba.blog_article_id = bad.blog_article_id) LEFT JOIN " . DB_PREFIX . "blog_article_to_store ba2s ON (ba.blog_article_id = ba2s.blog_article_id) WHERE bad.language_id = '" . (int)$this->config->get('config_language_id') . "' AND ba2s.store_id = '" . (int)$this->config->get('config_store_id') . "' AND ba.status = '1'");
+    public function getTotalBlogArticles($data = array()) {
+        $sql = "SELECT COUNT(*) as total FROM " . DB_PREFIX . "blog_article ba LEFT JOIN " . DB_PREFIX . "blog_article_description bad ON (ba.blog_article_id = bad.blog_article_id) LEFT JOIN " . DB_PREFIX . "blog_article_to_store ba2s ON (ba.blog_article_id = ba2s.blog_article_id) WHERE bad.language_id = '" . (int)$this->config->get('config_language_id') . "' AND ba2s.store_id = '" . (int)$this->config->get('config_store_id') . "' AND ba.status = '1'";
+
+        if (!empty($data['filter_tags'])) {
+            $sql .= " AND (";
+
+            $implode = array();
+
+            $words = explode(', ', trim(preg_replace('/\s+/', ' ', $data['filter_tags'])));
+
+            foreach ($words as $word) {
+                $implode[] = "bad.tags LIKE '%" . $this->db->escape($word) . "%'";
+            }
+
+            if ($implode) {
+                $sql .= " " . implode(" OR ", $implode) . "";
+            }
+
+            $sql .= ")";
+        }
+
+        if (!empty($data['blog_article_id'])) {
+            $sql .= ' AND ba.blog_article_id <> ' . $data['blog_article_id'];
+        }
+
+        $query = $this->db->query($sql);
 
         return $query->row['total'];
     }
