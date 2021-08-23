@@ -194,6 +194,8 @@ class ControllerExtensionModuleBlogNik extends Controller {
         $data['sort_article_title'] = $this->url->link('extension/module/blog_nik', 'user_token=' . $this->session->data['user_token'] . '&sort=bad.title' . $url, true);
         $data['sort_article_sort_order'] = $this->url->link('extension/module/blog_nik', 'user_token=' . $this->session->data['user_token'] . '&sort=ba.sort_order' . $url, true);
 
+        $data['module_blog_nik_module_link'] = HTTPS_CATALOG . 'index.php?route=extension/module/blog_nik';
+
         $filter_data = array(
             'sort'  => $sort,
             'order' => $order,

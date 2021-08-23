@@ -52,21 +52,23 @@
                 <hr>
             {% endif %}
 
-            <h4>{{ text_related_articles }}</h4>
-            <a href="{{ all_related_articles }}" style="display: block; color: black; text-decoration: underline;">{{ text_show_all }}</a>
-            <div class="row">
-                {% for related_article in related_articles %}
-                    <div class="col-sm-3">
-                        <a href="{{ related_article.link }}" class="blog-article">
-                            <img src="{{ related_article.thumb }}" alt="{{ related_article.title }}">
-                            <div class="blog-article-description">
-                                <span>{{ related_article.title }}</span>
-                                <p>{{ related_article.date }}</p>
-                            </div>
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
+            {% if related_articles %}
+                <h4>{{ text_related_articles }}</h4>
+                <a href="{{ all_related_articles }}" style="display: block; color: black; text-decoration: underline;">{{ text_show_all }}</a>
+                <div class="row">
+                    {% for related_article in related_articles %}
+                        <div class="col-sm-3">
+                            <a href="{{ related_article.link }}" class="blog-article">
+                                <img src="{{ related_article.thumb }}" alt="{{ related_article.title }}">
+                                <div class="blog-article-description">
+                                    <span>{{ related_article.title }}</span>
+                                    <p>{{ related_article.date }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
             {{ content_bottom }}
         </div>

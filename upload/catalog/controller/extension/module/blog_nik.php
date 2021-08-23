@@ -5,6 +5,8 @@ class ControllerExtensionModuleBlogNik extends Controller {
         $this->load->model('extension/module/blog_nik');
         $this->load->model('tool/image');
 
+        $this->document->setTitle($this->language->get('heading_title'));
+
         if (isset($this->request->get['page'])) {
             $page = $this->request->get['page'];
         } else {
@@ -144,78 +146,84 @@ class ControllerExtensionModuleBlogNik extends Controller {
 
         $article_info = $this->model_extension_module_blog_nik->getBlogArticle($this->request->get['blog_article_id']);
 
-        if ($article_info['image']) {
-            $thumb = $this->model_tool_image->resize($article_info['image'], 325, 225);
-        } else {
-            $thumb = $this->model_tool_image->resize('no_image.png', 325, 225);
-        }
+        if ($article_info) {
+            $this->document->setTitle($article_info['meta_title']);
+            $this->document->setDescription($article_info['meta_description']);
+            $this->document->setKeywords($article_info['meta_keyword']);
 
-        $data['article'] = array(
-            'blog_article_id' => $article_info['blog_article_id'],
-            'title'           => $article_info['title'],
-            'thumb'           => $thumb,
-            'description'     => html_entity_decode($article_info['description']),
-            'date'            => $article_info['date_added'],
-            'link'            => $this->url->link('extension/module/blog_nik/article', 'blog_article_id=' . $article_info['blog_article_id'])
-        );
+            if ($article_info['image']) {
+                $thumb = $this->model_tool_image->resize($article_info['image'], 325, 225);
+            } else {
+                $thumb = $this->model_tool_image->resize('no_image.png', 325, 225);
+            }
 
-        $filter_data = array(
-            'filter_tags'     => $article_info['tags'],
-            'start'           => 0,
-            'limit'           => $blog_settings['limit_related_articles'],
-            'blog_article_id' => $article_info['blog_article_id']
-        );
+            $data['article'] = array(
+                'blog_article_id' => $article_info['blog_article_id'],
+                'title' => $article_info['title'],
+                'thumb' => $thumb,
+                'description' => html_entity_decode($article_info['description']),
+                'date' => $article_info['date_added'],
+                'link' => $this->url->link('extension/module/blog_nik/article', 'blog_article_id=' . $article_info['blog_article_id'])
+            );
 
-        $articles = $this->model_extension_module_blog_nik->getBlogArticles($filter_data);
+            $filter_data = array(
+                'filter_tags' => $article_info['tags'],
+                'start' => 0,
+                'limit' => isset($blog_settings['limit_related_articles']) ? $blog_settings['limit_related_articles'] : 8,
+                'blog_article_id' => $article_info['blog_article_id']
+            );
 
-        if (!empty($article_info['tags'])) {
-            $current_article_tags = explode(', ', $article_info['tags']);
+            $articles = $this->model_extension_module_blog_nik->getBlogArticles($filter_data);
 
-            foreach ($articles as $key => $article) {
-                $tags_count = 0;
-                $article_tags = explode(', ', $article['tags']);
+            if (!empty($article_info['tags'])) {
+                $current_article_tags = explode(', ', $article_info['tags']);
 
-                foreach ($current_article_tags as $current_article_tag) {
-                    if (in_array($current_article_tag, $article_tags)) {
-                        $tags_count++;
+                foreach ($articles as $key => $article) {
+                    $tags_count = 0;
+                    $article_tags = explode(', ', $article['tags']);
+
+                    foreach ($current_article_tags as $current_article_tag) {
+                        if (in_array($current_article_tag, $article_tags)) {
+                            $tags_count++;
+                        }
+                    }
+
+                    if ($article['image']) {
+                        $thumb = $this->model_tool_image->resize($article['image'], 325, 225);
+                    } else {
+                        $thumb = $this->model_tool_image->resize('no_image.png', 325, 225);
+                    }
+
+                    $articles[$key]['link'] = $this->url->link('extension/module/blog_nik/article', 'blog_article_id=' . $article['blog_article_id']);
+                    $articles[$key]['date'] = date('d', strtotime($article['date_added'])) . ' ' . $this->language->get(date('M', strtotime($article['date_added']))) . ' ' . date('Y', strtotime($article['date_added']));
+                    $articles[$key]['thumb'] = $thumb;
+                    $articles[$key]['tags_count'] = $tags_count;
+                }
+
+                $data['all_related_articles'] = $this->url->link('extension/module/blog_nik/articles', 'tags=' . $article_info['tags'] . '&blog_article_id=' . $article_info['blog_article_id'], true);
+
+                if (isset($blog_settings['show_tags']) && $blog_settings['show_tags']) {
+                    $data['article_tags'] = array();
+
+                    foreach ($current_article_tags as $current_article_tag) {
+                        $data['article_tags'][] = array(
+                            'text' => $current_article_tag,
+                            'link' => $this->url->link('extension/module/blog_nik/articles', 'tags=' . $current_article_tag)
+                        );
                     }
                 }
-
-                if ($article['image']) {
-                    $thumb = $this->model_tool_image->resize($article['image'], 325, 225);
-                } else {
-                    $thumb = $this->model_tool_image->resize('no_image.png', 325, 225);
-                }
-
-                $articles[$key]['link'] = $this->url->link('extension/module/blog_nik/article', 'blog_article_id=' . $article['blog_article_id']);
-                $articles[$key]['date'] = date('d', strtotime($article['date_added'])) . ' ' . $this->language->get(date('M', strtotime($article['date_added']))) . ' ' . date('Y', strtotime($article['date_added']));
-                $articles[$key]['thumb'] = $thumb;
-                $articles[$key]['tags_count'] = $tags_count;
             }
 
-            $data['all_related_articles'] = $this->url->link('extension/module/blog_nik/articles', 'tags=' . $article_info['tags'] . '&blog_article_id=' . $article_info['blog_article_id'], true);
+            $sort_order = array();
 
-            if ($blog_settings['show_tags']) {
-                $data['article_tags'] = array();
-
-                foreach ($current_article_tags as $current_article_tag) {
-                    $data['article_tags'][] = array(
-                        'text' => $current_article_tag,
-                        'link' => $this->url->link('extension/module/blog_nik/articles', 'tags=' . $current_article_tag)
-                    );
-                }
+            foreach ($articles as $key => $value) {
+                $sort_order[$key] = $value['tags_count'];
             }
+
+            array_multisort($sort_order, SORT_DESC, $articles);
+
+            $data['related_articles'] = $articles;
         }
-
-        $sort_order = array();
-
-        foreach ($articles as $key => $value) {
-            $sort_order[$key] = $value['tags_count'];
-        }
-
-        array_multisort($sort_order, SORT_DESC, $articles);
-
-        $data['related_articles'] = $articles;
 
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['column_right'] = $this->load->controller('common/column_right');
@@ -231,6 +239,8 @@ class ControllerExtensionModuleBlogNik extends Controller {
         $this->load->language('extension/module/blog_nik');
         $this->load->model('extension/module/blog_nik');
         $this->load->model('tool/image');
+
+        $this->document->setTitle($this->language->get('heading_title'));
 
         if (isset($this->request->get['page'])) {
             $page = $this->request->get['page'];
