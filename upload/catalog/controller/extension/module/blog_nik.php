@@ -166,16 +166,16 @@ class ControllerExtensionModuleBlogNik extends Controller {
                 'link' => $this->url->link('extension/module/blog_nik/article', 'blog_article_id=' . $article_info['blog_article_id'])
             );
 
-            $filter_data = array(
-                'filter_tags' => $article_info['tags'],
-                'start' => 0,
-                'limit' => isset($blog_settings['limit_related_articles']) ? $blog_settings['limit_related_articles'] : 8,
-                'blog_article_id' => $article_info['blog_article_id']
-            );
-
-            $articles = $this->model_extension_module_blog_nik->getBlogArticles($filter_data);
-
             if (!empty($article_info['tags'])) {
+                $filter_data = array(
+                    'filter_tags' => $article_info['tags'],
+                    'start' => 0,
+                    'limit' => isset($blog_settings['limit_related_articles']) ? $blog_settings['limit_related_articles'] : 8,
+                    'blog_article_id' => $article_info['blog_article_id']
+                );
+
+                $articles = $this->model_extension_module_blog_nik->getBlogArticles($filter_data);
+
                 $current_article_tags = explode(', ', $article_info['tags']);
 
                 foreach ($articles as $key => $article) {
@@ -212,17 +212,17 @@ class ControllerExtensionModuleBlogNik extends Controller {
                         );
                     }
                 }
+
+                $sort_order = array();
+
+                foreach ($articles as $key => $value) {
+                    $sort_order[$key] = $value['tags_count'];
+                }
+
+                array_multisort($sort_order, SORT_DESC, $articles);
+
+                $data['related_articles'] = $articles;
             }
-
-            $sort_order = array();
-
-            foreach ($articles as $key => $value) {
-                $sort_order[$key] = $value['tags_count'];
-            }
-
-            array_multisort($sort_order, SORT_DESC, $articles);
-
-            $data['related_articles'] = $articles;
         }
 
         $data['column_left'] = $this->load->controller('common/column_left');
