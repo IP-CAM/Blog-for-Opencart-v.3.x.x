@@ -293,7 +293,7 @@ class ControllerExtensionModuleBlogNik extends Controller {
 
         $filter_data = array(
             'filter_tags'     => $tags,
-            'blog_article_id' => $blog_article_id,
+//            'blog_article_id' => $blog_article_id,
             'start'           => ($page - 1) * $limit,
             'limit'           => $limit
         );

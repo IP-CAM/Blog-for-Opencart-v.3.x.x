@@ -146,13 +146,13 @@ class ControllerExtensionModuleBlogNik extends Controller {
         if (isset($this->request->get['sort'])) {
             $sort = $this->request->get['sort'];
         } else {
-            $sort = 'bad.title';
+            $sort = 'ba.blog_article_id';
         }
 
         if (isset($this->request->get['order'])) {
             $order = $this->request->get['order'];
         } else {
-            $order = 'ASC';
+            $order = 'DESC';
         }
 
         if (isset($this->error['warning'])) {

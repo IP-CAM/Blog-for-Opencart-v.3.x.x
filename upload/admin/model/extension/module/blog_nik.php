@@ -174,7 +174,8 @@ class ModelExtensionModuleBlogNik extends Model {
 
             $sort_data = array(
                 'bad.title',
-                'ba.sort_order'
+                'ba.sort_order',
+                'ba.blog_article_id',
             );
 
             if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
